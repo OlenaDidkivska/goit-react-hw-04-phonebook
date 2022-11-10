@@ -1,7 +1,6 @@
 import styled from 'styled-components';
-import { Field as FormikField, Form as FormikForm } from 'formik';
 
-export const Form = styled(FormikForm)`
+export const Form = styled.form`
 padding 20px`;
 
 export const FormField = styled.div`
@@ -11,7 +10,7 @@ export const FormField = styled.div`
   align-content: flex-start;
 `;
 
-export const Field = styled(FormikField)`
+export const Field = styled.input`
   border: 1px solid rgba(33, 33, 33, 0.2);
   border-radius: 4px;
   padding: 10px;
