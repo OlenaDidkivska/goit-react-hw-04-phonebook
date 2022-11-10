@@ -36,7 +36,7 @@ const schema = yup.object().shape({
     .required(),
 });
 
-export const FormEl = ({ onSubmit }) => {
+export const ContactForm = ({ onSubmit }) => {
   const handleSubmit = (values, { resetForm }) => {
     onSubmit(values);
     resetForm();
@@ -70,6 +70,6 @@ export const FormEl = ({ onSubmit }) => {
   );
 };
 
-FormEl.prototype = {
+ContactForm.prototype = {
   onSubmit: PropTypes.string.isRequired,
 };

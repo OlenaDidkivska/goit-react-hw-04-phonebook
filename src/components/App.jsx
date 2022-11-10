@@ -1,41 +1,31 @@
-import React, { Component } from 'react';
+import { useState, useEffect } from 'react';
 import { Contacts } from './Contacts/Contacts';
-import { FormEl } from './Form/Form';
+import { ContactForm } from './Form/Form';
 import Filter from './Filter/Filter';
 import { nanoid } from 'nanoid';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 import { PhonebookContainer, ContactsMassage } from './App.styled';
 
-export class App extends Component {
-  state = {
-    contacts: [],
-    filter: '',
-  };
+export default function App() {
+  const [contacts, setContacts] = useState(() => {
+    return JSON.parse(localStorage.getItem('contacts')) ?? [];
+  });
+  const [filter, setFilter] = useState('');
 
-  componentDidMount() {
-    const contacts = localStorage.getItem('contacts');
-    const parseContacts = JSON.parse(contacts);
-    if (parseContacts) {
-      this.setState({ contacts: parseContacts });
-    }
-  }
+  useEffect(() => {
+    window.localStorage.setItem('contacts', JSON.stringify(contacts));
+  }, [contacts]);
 
-  componentDidUpdate(prevProps, prevState) {
-    if (this.state.contacts !== prevState.contacts) {
-      localStorage.setItem('contacts', JSON.stringify(this.state.contacts));
-    }
-  }
-
-  getCheckedContacts = name => {
-    const { contacts } = this.state;
+  const getCheckedContacts = name => {
     const normalizedName = name.toLowerCase();
     return contacts.some(
       contact => contact.name.toLowerCase() === normalizedName
     );
   };
 
-  formSubmitHandler = ({ name, number }) => {
-    const checkNewContact = this.getCheckedContacts(name);
+  const formSubmitHandler = ({ name, number }) => {
+    console.log(name, number);
+    const checkNewContact = getCheckedContacts(name);
 
     if (checkNewContact) {
       Notify.info(`${name} is already in contacts`);
@@ -46,63 +36,56 @@ export class App extends Component {
         number: number,
       };
 
-      this.setState(({ contacts }) => ({
-        contacts: [...contacts, contact],
-      }));
+      setContacts(state => [...state, contact]);
 
       Notify.success('Contact successfully added');
     }
   };
 
-  changeFilter = event => {
+  const changeFilter = event => {
     const { value } = event.currentTarget;
-    this.setState({ filter: value });
+    setFilter(value);
   };
 
-  getVisibleContacts = () => {
-    const { filter, contacts } = this.state;
+  const getVisibleContacts = () => {
     const normalizedFilter = filter.toLowerCase();
     return contacts.filter(contact =>
       contact.name.toLowerCase().includes(normalizedFilter)
     );
   };
 
-  deleteContact = id => {
-    this.setState(prevState => ({
-      contacts: prevState.contacts.filter(contact => contact.id !== id),
-    }));
+  const deleteContact = id => {
+    setContacts(contacts.filter(contact => contact.id !== id));
     Notify.info('Сontact deleted successfully');
   };
 
-  render() {
-    const visibleContacts = this.getVisibleContacts();
+  const visibleContacts = getVisibleContacts();
 
-    return (
-      <PhonebookContainer>
-        <h1>Phonebook</h1>
-        <FormEl onSubmit={this.formSubmitHandler} />
-        <h2>Contacts</h2>
-        {this.state.contacts.length !== 0 ? (
-          <>
-            <Filter value={this.state.filter} onChange={this.changeFilter} />
-            <ul>
-              {visibleContacts.map(contact => (
-                <Contacts
-                  key={contact.id}
-                  id={contact.id}
-                  name={contact.name}
-                  number={contact.number}
-                  onDelete={this.deleteContact}
-                />
-              ))}
-            </ul>
-          </>
-        ) : (
-          <ContactsMassage>
-            Your phonebook is empty, add your first contact
-          </ContactsMassage>
-        )}
-      </PhonebookContainer>
-    );
-  }
+  return (
+    <PhonebookContainer>
+      <h1>Phonebook</h1>
+      <ContactForm onSubmit={formSubmitHandler} />
+      <h2>Contacts</h2>
+      {contacts.length !== 0 ? (
+        <>
+          <Filter value={filter} onChange={changeFilter} />
+          <ul>
+            {visibleContacts.map(contact => (
+              <Contacts
+                key={contact.id}
+                id={contact.id}
+                name={contact.name}
+                number={contact.number}
+                onDelete={deleteContact}
+              />
+            ))}
+          </ul>
+        </>
+      ) : (
+        <ContactsMassage>
+          Your phonebook is empty, add your first contact
+        </ContactsMassage>
+      )}
+    </PhonebookContainer>
+  );
 }
